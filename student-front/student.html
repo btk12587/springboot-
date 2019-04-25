@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>学生信息管理</title>
+	<link href="css/bootstrap.min.css" type="text/css" rel="stylesheet"/>
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/vue.js"></script>
+    <script src="ueditor/ueditor.config.js"></script>
+    <script src="ueditor/ueditor.all.js"></script>
+	<script type="text/javascript">
+	$(function(){
+        var ue = UE.getEditor("info");
+		var url = "http://localhost:8080/student";
+		var vue = new Vue({
+			el:'#app',
+			data:{
+				bean:{sex:'男',sid:'0'},
+				schools:[]
+			},
+			methods:{
+				querySchool:function(){
+					var that = this;
+					$.getJSON(url+"/school/query",function(data){
+						that.schools = data;
+					})
+				},
+				save:function(){
+					var that = this;
+					delete that.bean.school;
+                    var info = ue.getContent();
+                    that.bean.info = info;
+					$.post(url+'/student/save',that.bean,function(id){
+                        console.log(id);
+						if(id>0){
+                            var file = $("#photo")[0].files[0];
+                            if(file){
+                                var fdata = new FormData();
+                                fdata.append('id',id);
+                                fdata.append('file',file);
+                                $.ajax({
+                                    url: url+'/student/upload',
+                                    type: 'POST',
+                                    data: fdata,
+                                    processData: false,
+                                    contentType: false,
+                                    success: function(res){
+                                        console.log(res)
+                                    },
+                                    error: function(err){
+                                        
+                                    }
+                                })
+                            }
+							that.bean = {};
+						}
+					})
+				}
+			}
+        })
+        
+		vue.querySchool();
+	})	
+	</script>
+</head>
+<body>
+	<div class="container" id="app">
+		<div class="row" style="margin-top: 15px;margin-bottom: 15px;">
+			<div class="col-md-2">
+				<input v-model="bean.name" class="form-control" placeholder="学生姓名">
+			</div>
+			<div class="col-md-2">
+				<select v-model="bean.sex" class="form-control">
+					<option value="男">男</option>
+					<option value="女">女</option>
+				</select>	
+			</div>
+			<div class="col-md-2">
+				<input v-model="bean.birthday" type="date" class="form-control" placeholder="出生日期">
+			</div>
+			<div class="col-md-6">
+				<input v-model="bean.addr" class="form-control" placeholder="家庭住址">
+			</div>
+		</div>
+        <div class="row" style="margin-bottom: 15px;">
+            <div class="col-md-2">
+            	<select v-model="bean.sid" class="form-control">
+            		<option value="0">请选择学校</option>	
+            		<option v-for="c in schools" :value="c.id">{{c.name}}</option>
+            	</select>
+            </div>
+            <div class="col-md-4">
+                <input id="photo" multiple type="file" class="form-control"/>
+            </div>
+            <div class="col-md-2 col-md-offset-4">
+            	<button @click="save" class="btn btn-primary btn-block">保存</button>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom: 15px;">
+            <div class="col-md-12">
+                <textarea id="info" style="height:400px;"></textarea>
+            </div>
+        </div>    
+	</div>
+</body>
+</html>

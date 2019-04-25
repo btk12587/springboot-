@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+        <script src="js/jquery.min.js"></script>
+        <script src="ueditor/ueditor.config.js"></script>
+        <script src="ueditor/ueditor.all.js"></script>
+		<title>UEditor</title>
+	</head>
+	<body>
+       <textarea id="info" style="height:500px"></textarea>
+       <button type="button" id="btn">提交</button>
+       <script>
+           var ue = UE.getEditor('info');
+           $("#btn").click(function(){
+               var con = ue.getContent();
+               $.post("http://localhost:8080/student/student/getinfo",{content:con},function(data){
+                   console.log(data)
+               })
+           })
+       </script>
+    </body>
+</html>
